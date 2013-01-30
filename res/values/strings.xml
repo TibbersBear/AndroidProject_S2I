@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Test</string>
+    <string name="title_section3">Carte</string>
+    <string name="title_section2">Favori</string>
+    <string name="title_section1">Liste</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="description">icone reduite</string>
+    <string name="title_activity_item">ItemActivity</string>
+    <string name="title_activity_map">Map</string>
+    <string name="apikey">AIzaSyD81FRS1ZFDfP7cXGWNN0Emp8T8t_paj5I</string>
+    
+		
+</resources>
