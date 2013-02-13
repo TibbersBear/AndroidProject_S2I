@@ -11,6 +11,6 @@
     <string name="title_activity_item">ItemActivity</string>
     <string name="title_activity_map">Map</string>
     <string name="apikey">AIzaSyD81FRS1ZFDfP7cXGWNN0Emp8T8t_paj5I</string>
-    
-		
+    <string name="title_activity_load">LoadActivity</string>
+
 </resources>

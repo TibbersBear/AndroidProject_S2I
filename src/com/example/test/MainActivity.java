@@ -70,7 +70,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	 */
 	ViewPager mViewPager;
 
-	private Handler progressBarHandler = new Handler();
+	
 	Data data;
 	private List<Item> Items;
 	private List<String> categories;
@@ -89,14 +89,13 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mSectionsPagerAdapter);
-
+		data =new Data();
 		// Items.add(new Item(0, "test", "test", "test", "test", "test", "test",
 		// "test", 0, 0, false));
 		Items = new ArrayList<Item>();
 		categories = new ArrayList<String>();
 
-		DownloadHandler D = new DownloadHandler();
-		D.run();
+		Items = data.getItems();
 
 		for (int i = 0; i < Items.size(); i++) {
 			Item IteratorItem = Items.get(i);
@@ -273,38 +272,5 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 
 	}
 
-	public class DownloadHandler extends TimerTask {
-
-		private Runnable H = null;
-
-		@Override
-		public void run() {
-			Handler mHandler = new Handler(Looper.getMainLooper());
-
-			mHandler.post(H = new Runnable() {
-				public void run() {
-					DownloadTask DLT = new DownloadTask(
-							mViewPager.getContext(), progressBarHandler);
-					DLT.execute(mViewPager);
-					try {
-						Log.v("Counter", "Items recus par la main activity"
-								+ Integer.toString(DLT.get().size()));
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (ExecutionException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					Items = DLT.getItems();
-					System.out.println("Process Accomplished Runned");
-				}
-
-			});
-			H.run();
-
-		}
-
-	}
-
+	
 }

@@ -1,6 +1,6 @@
 package com.example.test;
 
-import com.google.android.maps.GeoPoint;
+//import com.google.android.maps.GeoPoint;
 
 public class Item {
 	@Override
@@ -134,9 +134,9 @@ public class Item {
 		this.favori = favori;
 	}
 	
-	public GeoPoint getGeoPoint(){
-		GeoPoint geopoint = new GeoPoint((int)(lat*1E6),(int)(lon*1E6));
-		return geopoint;
-	}
+//	public GeoPoint getGeoPoint(){
+//		GeoPoint geopoint = new GeoPoint((int)(lat*1E6),(int)(lon*1E6));
+//		return geopoint;
+//	}
 
 }

@@ -17,8 +17,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.appengine.repackaged.com.google.api.client.json.Json;
+
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
@@ -28,87 +31,71 @@ import android.widget.Toast;
 
 public class DownloadTask extends AsyncTask<ViewPager, Integer, List<Item>> {
 
-	private ProgressDialog progressBar;
-	private int progressBarStatus = 0;
 	private List<Item> Items;
 	private Data data;
-	private Context C;
+	private Context context;
 	private ViewPager v;
-	private Handler progressBarHandler;
 	private HttpClient httpClient = new DefaultHttpClient();
 	private HttpGet httpGet = new HttpGet("http://cci.corellis.eu/pois.php");
-	
-	public DownloadTask(Context c, Handler h) {
+	private boolean loaded = false;
+	private String line = "";
+	private InputStream inputStream;
+	private JSONObject jsonObject;
+	private JSONArray jsonArray;
+	private int iterateur =0;
+
+	public DownloadTask(Context c, Handler h,Data d) {
 		super();
-		C = c;
-		progressBarHandler=h;
+		context = c;
+		data=d;
+		Log.v("Observercheck","Observer dans le DLT" +data.countObservers());
 	}
 
-	
 	public List<Item> getItems() {
 		return Items;
 	}
 
 	public void Loading() {
-		
+
 		try {
-			HttpResponse response = httpClient.execute(httpGet);
-			if (response != null) {
-				String line = "";
-				InputStream inputStream = response.getEntity().getContent();
-				line = convertStreamToString(inputStream);
+			
+				JSONObject jSonObjecttoextract = jsonArray.getJSONObject(iterateur);
+				long itemid = jSonObjecttoextract.getLong("id");
+				String itemcategorie = jSonObjecttoextract
+						.getString("categorie_id");
+				String itemname;
+				itemname = jSonObjecttoextract.getString("nom");
+				String itemsector = jSonObjecttoextract.getString("secteur");
+				String itemdescription = jSonObjecttoextract
+						.getString("informations");
+				String itemquartier = jSonObjecttoextract.getString("quartier");
+				String itemimage = jSonObjecttoextract.getString("image");
+				String itemicon = jSonObjecttoextract.getString("small_image");
+				double itemlat = jSonObjecttoextract.getDouble("lat");
+				double itemlon = jSonObjecttoextract.getDouble("lon");
+				Item newItem = new Item(itemid, itemname, itemsector,
+						itemquartier, itemcategorie, itemdescription, itemicon,
+						itemimage, itemlon, itemlat, false);
 
-				JSONObject jsonObject = new JSONObject(line);
-				JSONArray jsonArray = jsonObject.getJSONArray("results");
-				progressBar.setMax(jsonArray.length());
-				Log.v("Counter", "Taille de l'ensemble : "+ jsonArray.length());
-				for (int i = 0; i < jsonArray.length(); i++) {
-					progressBar.setProgress(i);
-					JSONObject jSonObjecttoextract = jsonArray.getJSONObject(i);
-					long itemid = jSonObjecttoextract.getLong("id");
-					String itemcategorie = jSonObjecttoextract.getString("categorie_id");
-					String itemname = jSonObjecttoextract.getString("nom");
-					String itemsector = jSonObjecttoextract.getString("secteur");
-					String itemdescription = jSonObjecttoextract.getString("informations");
-					String itemquartier = jSonObjecttoextract.getString("quartier");
-					String itemimage = jSonObjecttoextract.getString("image");
-					String itemicon = jSonObjecttoextract.getString("small_image");
-					double itemlat = jSonObjecttoextract.getDouble("lat");
-					double itemlon = jSonObjecttoextract.getDouble("lon");
-					Item newItem = new Item(itemid, itemname, itemsector,
-							itemquartier, itemcategorie, itemdescription,
-							itemicon, itemimage, itemlon, itemlat, false);
-					
-					Items.add(newItem);
-					 //Log.v("Counter", newItem.toString());
-					 //Log.v("Counter", i + "/" + jsonArray.length());
-					this.publishProgress(0);
-				}
-
-			}
-			else{
-				Log.v("Error", "Reponse = NULL");
-				}
-		}
-
-		catch (ClientProtocolException e) {
-			e.printStackTrace();
-			Log.e("AppAndroidS2I", e.getMessage());
-		} catch (IOException e) {
-			e.printStackTrace();
-			Log.e("AppAndroidS2I", e.getMessage());
+				Items.add(newItem);
+				data.addItem(newItem);
+				// Log.v("Counter", newItem.toString());
+				// Log.v("Counter", i + "/" + jsonArray.length());
+				this.publishProgress(0);
+			
 		} catch (JSONException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-			Log.e("AppAndroidS2I", e.getMessage());
 		}
+
 	}
 
 	@Override
 	protected void onProgressUpdate(Integer... values) {
 		// TODO Auto-generated method stub
 		super.onProgressUpdate(values);
-		progressBar.show();
 		
+
 	}
 
 	private String convertStreamToString(InputStream inputStream) {
@@ -130,44 +117,68 @@ public class DownloadTask extends AsyncTask<ViewPager, Integer, List<Item>> {
 	protected void onPostExecute(List<Item> result) {
 		// TODO Auto-generated method stub
 		super.onPostExecute(result);
-		progressBar.setProgress(100);
-		progressBar.dismiss();
+
 		Log.v("counter", Integer.toString(Items.size()));
-		data.setItems(Items);
+		//data.addItems(Items);
+		Log.v("counter data", Integer.toString(data.getsize()));
+		data.IsLoaded();
+		data.InitializeFavori();
 	}
 
 	@Override
 	protected void onPreExecute() {
 		// TODO Auto-generated method stub
 		super.onPreExecute();
-		Items= new ArrayList<Item>();
-		progressBar=new ProgressDialog(C);
-		progressBar.setCancelable(false);
-		progressBar.setMessage("Chargement en cours");
-		progressBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-		progressBar.setProgress(0);
-		progressBar.setMax(100);
-		
-		
+		Items = new ArrayList<Item>();
+
+		try {
+			HttpResponse response = httpClient.execute(httpGet);
+			if (response != null) {
+				String line = "";
+				InputStream inputStream = response.getEntity().getContent();
+				line = convertStreamToString(inputStream);
+
+				
+
+				jsonObject = new JSONObject(line);
+
+				jsonArray = jsonObject.getJSONArray("results");
+				data.setMax(jsonArray.length());
+				Log.v("Counter", "Taille de l'ensemble : " + jsonArray.length());
+			} else {
+				Log.v("Error", "Reponse = NULL");
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 	@Override
 	protected List<Item> doInBackground(ViewPager... params) {
 		// TODO Auto-generated method stub
-		//v = params[0];
-		
-		//progressBar = new ProgressDialog(v.findViewById(R.id.progressBar1).getContext());
-		
-		//progressBar.show();
-		
+		// v = params[0];
+
+		// progressBar = new
+		// ProgressDialog(v.findViewById(R.id.progressBar1).getContext());
+
+		// progressBar.show();
+
 		Log.v("LoadStart", "Loading starting");
-		this.Loading();
-		
+		for (iterateur=0;iterateur<jsonArray.length();iterateur++){
+			this.Loading();
+		}
+
 		this.publishProgress(0);
-		
-		
+
 		return Items;
 	}
 
-	
 }

@@ -46,11 +46,11 @@ public class ItemAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		/*if (is_fav){
+		if (is_fav){
 			Items = data.getFavItems();
 		}else{
 		data.updateItems(Items);
-		}*/
+		}
 
 		convertView = inflater.inflate(R.layout.icone_list,null);
 		
